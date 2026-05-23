@@ -1,9 +1,9 @@
 class Bus {
-  String busName;
-  List<String> routes;
-  List<String?>? times;
+  final String busName;
+  final List<String> routes;
+  final List<String?>? times;
 
-  Bus({
+  const Bus({
     required this.busName,
     required this.routes,
     this.times,

@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 import 'bus_data.dart';
 import 'bus_model.dart';
 
@@ -4308,38 +4306,32 @@ class StationData {
     'Adamjee College': ['4 No. Alike'],
   };
 
-static List<Bus> getBusesForSegment(String source, String destination) {
-  // Capitalize the first letter of source and destination
-  source = source.split(' ').map((word) => word[0].toUpperCase() + word.substring(1)).join(' ');
-  destination = destination.split(' ').map((word) => word[0].toUpperCase() + word.substring(1)).join(' ');
+  static Set<String>? _stationSetCache;
+  static Set<String> get stationSet =>
+      _stationSetCache ??= Set<String>.from(stationList);
 
-  // Log the inputs
-  debugPrint('Fetching buses for segment: $source to $destination');
+  // Pre-computed Set<String> per station for O(1) intersection.
+  static Map<String, Set<String>>? _stationBusSetsCache;
+  static Map<String, Set<String>> get stationBusSets {
+    if (_stationBusSetsCache != null) return _stationBusSetsCache!;
+    _stationBusSetsCache = {};
+    for (final entry in stationMap.entries) {
+      _stationBusSetsCache![entry.key] = Set<String>.from(entry.value);
+    }
+    return _stationBusSetsCache!;
+  }
 
-  // Fetch bus names for the source and destination
-  final sourceBusNames = stationMap[source] ?? [];
-  final destinationBusNames = stationMap[destination] ?? [];
+  static List<Bus> getBusesForSegment(String source, String destination) {
+    source = source.split(' ').map((w) => w[0].toUpperCase() + w.substring(1)).join(' ');
+    destination = destination.split(' ').map((w) => w[0].toUpperCase() + w.substring(1)).join(' ');
 
-  // Log the retrieved bus names
-  debugPrint('Source buses for $source: $sourceBusNames');
-  debugPrint('Destination buses for $destination: $destinationBusNames');
+    final sourceBusSet = stationBusSets[source] ?? const {};
+    final destBusSet = stationBusSets[destination] ?? const {};
+    final commonBusNames = sourceBusSet.intersection(destBusSet);
 
-  // Find common bus names between source and destination
-  final commonBusNames =
-      sourceBusNames.toSet().intersection(destinationBusNames.toSet());
-
-  // Log the intersection result
-  debugPrint('Common buses between $source and $destination: $commonBusNames');
-
-  // Map common bus names to Bus objects and return
-  final displayedBuses =
-      commonBusNames.map((name) => BusData.buses[name]!).toList();
-
-  // Log the final bus list
-  debugPrint('Buses for segment $source to $destination: $displayedBuses');
-
-  return displayedBuses;
-}
-
-
+    return commonBusNames
+        .where((name) => BusData.buses.containsKey(name))
+        .map((name) => BusData.buses[name]!)
+        .toList();
+  }
 }

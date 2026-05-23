@@ -15,11 +15,9 @@ class BusDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Find the index of source and destination in the bus routes
     int? sourceIndex = bus.routes.indexOf(source ?? '');
     int? destinationIndex = bus.routes.indexOf(destination ?? '');
 
-    // If source or destination isn't found, return an empty list
     if (sourceIndex == -1 || destinationIndex == -1) {
       return Scaffold(
         appBar: AppBar(
@@ -32,7 +30,8 @@ class BusDetails extends StatelessWidget {
             ),
           ),
           backgroundColor: AppConstant.appMainColor,
-          elevation: 1,
+          iconTheme: const IconThemeData(color: Colors.white),
+          elevation: 0,
         ),
         body: const Center(
           child: Text(
@@ -43,7 +42,6 @@ class BusDetails extends StatelessWidget {
       );
     }
 
-    // Determine the range of indices from source to destination
     List<String> filteredRoutes = [];
     if (sourceIndex < destinationIndex) {
       filteredRoutes = bus.routes.sublist(sourceIndex, destinationIndex + 1);
@@ -53,6 +51,7 @@ class BusDetails extends StatelessWidget {
     }
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F0F0),
       appBar: AppBar(
         title: Text(
           bus.busName,
@@ -63,55 +62,56 @@ class BusDetails extends StatelessWidget {
           ),
         ),
         backgroundColor: AppConstant.appMainColor,
-        elevation: 1,
+        iconTheme: const IconThemeData(color: Colors.white),
+        elevation: 0,
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 8),
-             const Center(
+              const SizedBox(height: 16),
+              const Center(
                 child: Icon(
                   Icons.directions_bus,
-                  size: 60,
-                  color: AppConstant.appSecondaryColor,
+                  size: 64,
+                  color: AppConstant.appMainColor,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               ...filteredRoutes.asMap().entries.map((entry) {
                 int index = entry.key;
                 String route = entry.value;
 
-                // Define colors for source and destination
-                Color routeColor = Colors.grey.shade700;
                 Color tileColor = Colors.grey.shade100;
+                Color textColor = Colors.grey.shade800;
 
                 if (route == source) {
-                  routeColor = Colors.white;
-                  tileColor = Colors.teal.shade400;
+                  tileColor = AppConstant.appAccentColor;
+                  textColor = Colors.white;
                 } else if (route == destination) {
-                  routeColor = Colors.white;
-                  tileColor = Colors.teal.shade600;
+                  tileColor = AppConstant.appMainColor;
+                  textColor = Colors.white;
                 }
 
                 return Card(
                   elevation: 1,
                   margin: const EdgeInsets.symmetric(vertical: 4),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: Colors.teal.shade100,
-                      radius: 14,
+                      backgroundColor: AppConstant.appSecondaryColor
+                          .withValues(alpha: 0.2),
+                      radius: 16,
                       child: Text(
                         '${index + 1}',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                          color: AppConstant.appSecondaryColor,
                         ),
                       ),
                     ),
@@ -120,25 +120,21 @@ class BusDetails extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: routeColor,
+                        color: textColor,
                       ),
                     ),
-                    trailing: const Icon(
-                      Icons.double_arrow,
-                      size: 16,
-                      color: Colors.teal,
-                    ),
+                    trailing: null,
                     tileColor: tileColor,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     contentPadding: const EdgeInsets.symmetric(
                       vertical: 4,
-                      horizontal: 10,
+                      horizontal: 12,
                     ),
                   ),
                 );
-              }).toList(),
+              }),
             ],
           ),
         ),
