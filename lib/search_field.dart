@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class CityAutocomplete extends StatelessWidget {
+class CityAutocomplete extends StatefulWidget {
   final List<String> cityNames;
   final Future<void> Function(String) onCitySelected;
   final String title;
@@ -13,36 +13,48 @@ class CityAutocomplete extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<CityAutocomplete> createState() => _CityAutocompleteState();
+}
+
+class _CityAutocompleteState extends State<CityAutocomplete> {
+  String? _selectedValue;
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Autocomplete<String>(
       optionsBuilder: (TextEditingValue textEditingValue) {
-        if (textEditingValue.text.isEmpty) {
+        final text = textEditingValue.text;
+        if (text.isEmpty || text == _selectedValue) {
           return const Iterable<String>.empty();
         }
-        return cityNames.where((String city) {
-          return city.toLowerCase().contains(textEditingValue.text.toLowerCase());
-        });
+        return widget.cityNames.where((city) =>
+            city.toLowerCase().contains(text.toLowerCase()));
       },
       onSelected: (String selection) {
-        onCitySelected(selection);
+        _selectedValue = selection;
+        _focusNode.unfocus();
+        widget.onCitySelected(selection);
       },
-      fieldViewBuilder: (
-        BuildContext context,
-        TextEditingController textEditingController,
-        FocusNode focusNode,
-        VoidCallback onFieldSubmitted,
-      ) {
+      fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
+        // Sync the external focusNode with our tracked one so unfocus works.
         return TextField(
           controller: textEditingController,
           focusNode: focusNode,
           onChanged: (value) {
-            // Only notify when cleared so the route list resets immediately.
-            if (value.isEmpty) onCitySelected('');
+            if (value != _selectedValue) _selectedValue = null;
+            if (value.isEmpty) widget.onCitySelected('');
           },
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
-            hintText: title,
+            hintText: widget.title,
             hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
             contentPadding:
                 const EdgeInsets.symmetric(vertical: 8, horizontal: 12),

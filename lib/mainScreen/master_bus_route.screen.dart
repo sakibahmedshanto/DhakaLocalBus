@@ -23,16 +23,15 @@ class _MasterBusRouteScreenState extends State<MasterBusRouteScreen> {
   List<String>? advancedRoute;
   Map<String, List<Bus>>? segmentToBuses;
   bool _isLoading = false;
+  bool _dataReady = false;
 
   @override
   void initState() {
     super.initState();
-    // Pre-warm heavy static caches after first frame so startup is instant.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.microtask(() {
-        StationData.stationBusSets;   // builds Set<String> per station once
-        BusChangeData.busRoutes;      // initializes the 334K-entry map once
-      });
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      StationData.stationBusSets;
+      await BusChangeData.init();
+      if (mounted) setState(() => _dataReady = true);
     });
   }
 
@@ -51,6 +50,7 @@ class _MasterBusRouteScreenState extends State<MasterBusRouteScreen> {
   }
 
   Future<void> _refreshRoutes() async {
+    if (!_dataReady) return;
     final bothValid = StationData.stationSet.contains(source) &&
         StationData.stationSet.contains(destination);
 
